@@ -62,33 +62,6 @@ python ip_address_finder.py
 - Monitoring operasi search
 - Activity logging
 
-## Code Structure
-
-```
-ip-address-finder/
- src/
-    config/
-       settings.py
-    datastructures/
-       nodes.py
-       splay_tree.py
-    factories/
-       tree_factory.py
-    gui/
-        app.py
- ip_address_finder.py
- requirements.txt
- test_splay_tree.py
-```
-
-## Testing
-
-Untuk menjalankan test suite:
-
-```bash
-python -m pytest test_splay_tree.py
-```
-
 ## Contributing
 
 Kontribusi selalu diterima dengan senang hati. Silahkan buat pull request untuk:
