@@ -27,7 +27,7 @@ IP Address Finder memiliki beberapa requirement:
 Clone repository ini:
 
 ```bash
-git clone https://github.com/delissesu/Hello-Wold-and-Other-Disasters.git
+git clone https://github.com/delissesu/ip-address-finder.git
 cd ip-address-finder
 ```
 
