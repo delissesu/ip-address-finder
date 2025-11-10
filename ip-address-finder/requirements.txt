@@ -1,0 +1,10 @@
+# Requirements untuk IP Address Finder
+
+# Tkinter sudah built-in di Python standard library
+# Tidak ada external dependencies yang diperlukan
+
+# Untuk development dan testing (opsional):
+# pytest>=7.0.0
+# pytest-cov>=4.0.0
+
+# Python version: 3.7+
