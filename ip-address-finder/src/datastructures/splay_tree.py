@@ -138,6 +138,25 @@ class SplayTree:
         self.size -= 1
         return True
 
+    def update(self, ip_address: str, new_data_packet: str | None = None) -> tuple[bool, str | None]:
+        """
+        Update data_packet pada node yang sudah ada.
+        
+        Args:
+            ip_address: IP address yang akan diupdate
+            new_data_packet: Data packet baru
+            
+        Returns:
+            tuple: (success: bool, old_data_packet: str | None)
+        """
+        node = self.search(ip_address)
+        if node is None:
+            return (False, None)
+        
+        old_packet = node.data_packet
+        node.data_packet = new_data_packet
+        return (True, old_packet)
+
     def inorder_traversal(self) -> List[Node]:
         result: List[Node] = []
         self._inorder_helper(self.root, result)

@@ -97,6 +97,7 @@ class IPAddressFinderGUI:
 
         self._build_add_device_section(left_panel)
         self._build_search_section(left_panel)
+        self._build_update_section(left_panel)
         self._build_delete_section(left_panel)
         self._build_quick_actions(left_panel)
 
@@ -160,6 +161,29 @@ class IPAddressFinderGUI:
             text="🗑️ Hapus",
             command=self._handle_delete_device,
             bg=style.button_delete,
+            fg=GUI_STYLE.foreground,
+            font=("Arial", 9, "bold"),
+            cursor="hand2",
+        ).pack(fill=tk.X, pady=(5, 0))
+
+    def _build_update_section(self, parent: tk.Widget) -> None:
+        style = GUI_STYLE
+        frame = tk.LabelFrame(parent, text="Update Device", font=("Arial", 9, "bold"))
+        frame.pack(fill=tk.X, pady=(0, 10))
+
+        tk.Label(frame, text="IP Address:").pack(anchor="w", pady=(5, 0))
+        self.update_ip_entry = tk.Entry(frame, width=25)
+        self.update_ip_entry.pack(fill=tk.X, pady=(0, 5))
+
+        tk.Label(frame, text="Data Paket Baru:").pack(anchor="w")
+        self.update_packet_entry = tk.Entry(frame, width=25)
+        self.update_packet_entry.pack(fill=tk.X, pady=(0, 5))
+
+        tk.Button(
+            frame,
+            text="✏️ Update",
+            command=self._handle_update_device,
+            bg=style.button_update,
             fg=GUI_STYLE.foreground,
             font=("Arial", 9, "bold"),
             cursor="hand2",
@@ -326,6 +350,34 @@ class IPAddressFinderGUI:
             messagebox.showwarning("Gak Ketemu", f"IP Address {ip_address} gak ada!")
 
         self.delete_entry.delete(0, tk.END)
+
+    def _handle_update_device(self) -> None:
+        ip_address = self.update_ip_entry.get().strip()
+        new_packet = self.update_packet_entry.get().strip()
+
+        if not ip_address:
+            messagebox.showwarning("Peringatan", "Isi IP Address dulu ya!")
+            return
+        if not new_packet:
+            messagebox.showwarning("Peringatan", "Isi Data Paket baru dulu ya!")
+            return
+
+        success, old_packet = self.splay_tree.update(ip_address, new_packet)
+        device_name = self.device_names.get(ip_address, "Device Gak Dikenal")
+
+        if success:
+            self._log_message(f"Updated: {device_name} ({ip_address}) - Packet: {old_packet} → {new_packet}")
+            messagebox.showinfo(
+                "Berhasil",
+                f"Device {device_name} udah diupdate!\n\nPacket lama: {old_packet}\nPacket baru: {new_packet}"
+            )
+            self._refresh_views()
+        else:
+            self._log_message(f"Gagal update: IP {ip_address} gak ketemu")
+            messagebox.showwarning("Gak Ketemu", f"IP Address {ip_address} gak ada di jaringan!")
+
+        self.update_ip_entry.delete(0, tk.END)
+        self.update_packet_entry.delete(0, tk.END)
 
     def _handle_show_all_devices(self) -> None:
         nodes = self.splay_tree.inorder_traversal()

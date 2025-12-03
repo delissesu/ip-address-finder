@@ -14,6 +14,7 @@ class GuiStyle:
     button_add: str = "#27ae60"
     button_search: str = "#3498db"
     button_delete: str = "#e74c3c"
+    button_update: str = "#e67e22"
     button_generate: str = "#f39c12"
     button_show_all: str = "#9b59b6"
     button_clear: str = "#95a5a6"
