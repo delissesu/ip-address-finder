@@ -101,6 +101,18 @@ class SplayTree:
         self.size += 1
         return True
 
+    def _find_node(self, ip_address: str) -> Optional[Node]:
+        """Mencari node tanpa splay dan tanpa increment search_count."""
+        current = self.root
+        while current:
+            if ip_address < current.ip_address:
+                current = current.left
+            elif ip_address > current.ip_address:
+                current = current.right
+            else:
+                return current
+        return None
+
     def search(self, ip_address: str) -> Optional[Node]:
         self.search_count += 1
         current = self.root
@@ -138,24 +150,52 @@ class SplayTree:
         self.size -= 1
         return True
 
-    def update(self, ip_address: str, new_data_packet: str | None = None) -> tuple[bool, str | None]:
+    def update(
+        self,
+        old_ip_address: str,
+        new_ip_address: str | None = None,
+        new_data_packet: str | None = None
+    ) -> tuple[bool, str | None, str | None]:
         """
-        Update data_packet pada node yang sudah ada.
+        Update IP address dan/atau data_packet pada node yang sudah ada.
+        
+        Jika IP berubah, akan delete node lama dan insert node baru.
+        Node yang diupdate akan di-splay ke root.
         
         Args:
-            ip_address: IP address yang akan diupdate
-            new_data_packet: Data packet baru
+            old_ip_address: IP address yang akan diupdate
+            new_ip_address: IP address baru (opsional, None = tidak diubah)
+            new_data_packet: Data packet baru (opsional, None = tidak diubah)
             
         Returns:
-            tuple: (success: bool, old_data_packet: str | None)
+            tuple: (success: bool, old_ip: str | None, old_packet: str | None)
         """
-        node = self.search(ip_address)
+        # Cari node yang akan diupdate (tanpa splay, tanpa increment counter)
+        node = self._find_node(old_ip_address)
         if node is None:
-            return (False, None)
+            return (False, None, None)
         
         old_packet = node.data_packet
-        node.data_packet = new_data_packet
-        return (True, old_packet)
+        
+        # Jika IP tidak berubah, hanya update packet
+        if new_ip_address is None or new_ip_address == old_ip_address:
+            if new_data_packet is not None:
+                node.data_packet = new_data_packet
+            # Splay node ke root setelah update
+            self._splay(node)
+            return (True, None, old_packet)
+        
+        # IP berubah: delete lama, insert baru
+        # Simpan packet yang akan digunakan
+        packet_to_use = new_data_packet if new_data_packet is not None else old_packet
+        
+        # Delete node lama (ini akan splay successor/predecessor)
+        self.delete(old_ip_address)
+        
+        # Insert node baru (ini akan splay node baru ke root)
+        self.insert(new_ip_address, packet_to_use)
+        
+        return (True, old_ip_address, old_packet)
 
     def inorder_traversal(self) -> List[Node]:
         result: List[Node] = []

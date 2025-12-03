@@ -205,11 +205,15 @@ class IPAddressFinderGUI:
         frame = tk.LabelFrame(parent, text="Update Device", font=("Arial", 9, "bold"))
         frame.pack(fill=tk.X, pady=(0, 10))
 
-        tk.Label(frame, text="IP Address:").pack(anchor="w", pady=(5, 0))
+        tk.Label(frame, text="IP Address Lama:").pack(anchor="w", pady=(5, 0))
         self.update_ip_entry = tk.Entry(frame, width=25)
         self.update_ip_entry.pack(fill=tk.X, pady=(0, 5))
 
-        tk.Label(frame, text="Data Paket Baru:").pack(anchor="w")
+        tk.Label(frame, text="IP Address Baru (kosongkan jika tidak diubah):").pack(anchor="w")
+        self.update_new_ip_entry = tk.Entry(frame, width=25)
+        self.update_new_ip_entry.pack(fill=tk.X, pady=(0, 5))
+
+        tk.Label(frame, text="Data Paket Baru (kosongkan jika tidak diubah):").pack(anchor="w")
         self.update_packet_entry = tk.Entry(frame, width=25)
         self.update_packet_entry.pack(fill=tk.X, pady=(0, 5))
 
@@ -386,31 +390,59 @@ class IPAddressFinderGUI:
         self.delete_entry.delete(0, tk.END)
 
     def _handle_update_device(self) -> None:
-        ip_address = self.update_ip_entry.get().strip()
-        new_packet = self.update_packet_entry.get().strip()
+        old_ip = self.update_ip_entry.get().strip()
+        new_ip = self.update_new_ip_entry.get().strip() or None
+        new_packet = self.update_packet_entry.get().strip() or None
 
-        if not ip_address:
-            messagebox.showwarning("Peringatan", "Isi IP Address dulu ya!")
+        if not old_ip:
+            messagebox.showwarning("Peringatan", "Isi IP Address Lama dulu ya!")
             return
-        if not new_packet:
-            messagebox.showwarning("Peringatan", "Isi Data Paket baru dulu ya!")
+        
+        if new_ip is None and new_packet is None:
+            messagebox.showwarning("Peringatan", "Isi minimal salah satu: IP Baru atau Data Paket Baru!")
             return
+        
+        # Validasi format IP baru jika diisi
+        if new_ip and not self._validate_ip(new_ip):
+            messagebox.showerror("Error", "Format IP Address Baru salah!")
+            return
+        
+        # Cek apakah IP baru sudah ada (jika berbeda dari IP lama)
+        if new_ip and new_ip != old_ip:
+            existing = self.splay_tree.search(new_ip)
+            if existing:
+                messagebox.showerror("Error", f"IP Address {new_ip} sudah digunakan device lain!")
+                return
 
-        success, old_packet = self.splay_tree.update(ip_address, new_packet)
-        device_name = self.device_names.get(ip_address, "Device Gak Dikenal")
+        device_name = self.device_names.get(old_ip, "Device Gak Dikenal")
+        success, old_ip_changed, old_packet = self.splay_tree.update(old_ip, new_ip, new_packet)
 
         if success:
-            self._log_message(f"Updated: {device_name} ({ip_address}) - Packet: {old_packet} → {new_packet}")
+            # Update device_names jika IP berubah
+            if old_ip_changed and new_ip:
+                self.device_names[new_ip] = device_name
+                self.device_names.pop(old_ip, None)
+            
+            # Buat pesan hasil
+            changes = []
+            if old_ip_changed:
+                changes.append(f"IP: {old_ip} → {new_ip}")
+            if new_packet:
+                changes.append(f"Packet: {old_packet} → {new_packet}")
+            
+            change_text = "\n".join(changes)
+            self._log_message(f"Updated: {device_name} - {', '.join(changes)}")
             messagebox.showinfo(
                 "Berhasil",
-                f"Device {device_name} udah diupdate!\n\nPacket lama: {old_packet}\nPacket baru: {new_packet}"
+                f"Device {device_name} udah diupdate!\n\n{change_text}"
             )
             self._refresh_views()
         else:
-            self._log_message(f"Gagal update: IP {ip_address} gak ketemu")
-            messagebox.showwarning("Gak Ketemu", f"IP Address {ip_address} gak ada di jaringan!")
+            self._log_message(f"Gagal update: IP {old_ip} gak ketemu")
+            messagebox.showwarning("Gak Ketemu", f"IP Address {old_ip} gak ada di jaringan!")
 
         self.update_ip_entry.delete(0, tk.END)
+        self.update_new_ip_entry.delete(0, tk.END)
         self.update_packet_entry.delete(0, tk.END)
 
     def _handle_show_all_devices(self) -> None:
