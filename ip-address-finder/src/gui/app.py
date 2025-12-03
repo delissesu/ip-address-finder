@@ -29,7 +29,7 @@ class IPAddressFinderGUI:
     def __init__(self, root: tk.Tk, factory: TreeFactory) -> None:
         self.root = root
         self.root.title("Pencarian IP Address - Splay Tree")
-        self.root.geometry("900x700")
+        self.root.geometry("950x850")
         self.root.resizable(True, True)
 
         self.splay_tree: SplayTree = factory.create_tree()
@@ -71,14 +71,48 @@ class IPAddressFinderGUI:
 
     def _build_left_panel(self, parent: tk.Widget) -> None:
         style = GUI_STYLE
-        left_panel = tk.LabelFrame(
+        
+        # Outer frame untuk panel kontrol
+        outer_frame = tk.LabelFrame(
             parent,
             text="Panel Kontrol",
             font=("Arial", 11, "bold"),
-            padx=10,
-            pady=10,
         )
-        left_panel.pack(side=tk.LEFT, fill=tk.BOTH, padx=(0, 5))
+        outer_frame.pack(side=tk.LEFT, fill=tk.BOTH, padx=(0, 5))
+
+        # Canvas untuk scrolling
+        canvas = tk.Canvas(outer_frame, highlightthickness=0, width=250)
+        scrollbar = tk.Scrollbar(outer_frame, orient="vertical", command=canvas.yview)
+        
+        # Scrollable frame di dalam canvas
+        scrollable_frame = tk.Frame(canvas, padx=10, pady=10)
+        
+        # Configure scroll region saat frame berubah ukuran
+        def configure_scroll_region(event):
+            canvas.configure(scrollregion=canvas.bbox("all"))
+        scrollable_frame.bind("<Configure>", configure_scroll_region)
+        
+        # Buat window di dalam canvas
+        canvas_window = canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        
+        # Update width canvas window saat canvas resize
+        def configure_canvas_width(event):
+            canvas.itemconfig(canvas_window, width=event.width)
+        canvas.bind("<Configure>", configure_canvas_width)
+        
+        canvas.configure(yscrollcommand=scrollbar.set)
+        
+        # Pack canvas dan scrollbar
+        canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        
+        # Enable mouse wheel scrolling
+        def on_mousewheel(event):
+            canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+        canvas.bind_all("<MouseWheel>", on_mousewheel)
+        
+        # Gunakan scrollable_frame sebagai parent untuk semua sections
+        left_panel = scrollable_frame
 
         info_frame = tk.LabelFrame(left_panel, text="Info Sistem", font=("Arial", 9, "bold"))
         info_frame.pack(fill=tk.X, pady=(0, 10))
