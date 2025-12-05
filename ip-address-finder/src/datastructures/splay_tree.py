@@ -54,21 +54,30 @@ class SplayTree:
         while node.parent:
             parent = node.parent
             grandparent = parent.parent
+            
+            # ZIG
             if grandparent is None:
                 if node == parent.left:
                     self._right_rotate(parent)
                 else:
                     self._left_rotate(parent)
+            
             elif node == parent.left and parent == grandparent.left:
+                # ZIG-ZIG : Kiri - Kiri
                 self._right_rotate(grandparent)
                 self._right_rotate(parent)
+                
             elif node == parent.right and parent == grandparent.right:
+                # ZAG-ZAG : Kanan - Kanan
                 self._left_rotate(grandparent)
                 self._left_rotate(parent)
+
             elif node == parent.right and parent == grandparent.left:
+                # ZIG - ZAG : Kiri - Kanan
                 self._left_rotate(parent)
                 self._right_rotate(parent)
             else:
+                # ZAG - ZIG : Kanan - Kiri
                 self._right_rotate(parent)
                 self._left_rotate(parent)
 
@@ -102,7 +111,6 @@ class SplayTree:
         return True
 
     def _find_node(self, ip_address: str) -> Optional[Node]:
-        """Mencari node tanpa splay dan tanpa increment search_count."""
         current = self.root
         while current:
             if ip_address < current.ip_address:
