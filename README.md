@@ -68,7 +68,3 @@ Kontribusi selalu diterima dengan senang hati. Silahkan buat pull request untuk:
 ## Security
 
 Jika kamu menemukan masalah keamanan dalam aplikasi ini, silakan kirim email ke [naveriaworks@gmail.com].
-
-## License
-
-IP Address Finder adalah open-sourced software yang dilisensikan di bawah [MIT license](https://opensource.org/licenses/MIT).
